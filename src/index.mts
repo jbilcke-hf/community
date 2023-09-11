@@ -37,7 +37,7 @@ app.post("/post", async (req, res) => {
   const prompt = `${req.body.prompt || ""}`
   const assetUrl = `${req.body.assetUrl || ""}`
   const previewUrl = `${req.body.previewUrl || assetUrl}`
-  const createdAt = `${req.body.createdAt || ""}`
+  const createdAt = `${req.body.createdAt || new Date().toISOString()}`
   const upvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
   const downvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
 
