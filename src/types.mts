@@ -1,6 +1,6 @@
 
 
-export interface Post {
+export type Post = {
   postId: string
   appId: string
   prompt: string
