@@ -22,7 +22,7 @@ const port = 7860
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 
-app.post("/post", async (req, res) => {
+app.post("/posts/:appId", async (req, res) => {
 
   if (!hasValidAuthorization(req.headers)) {
     console.log("Invalid authorization")
@@ -32,8 +32,17 @@ app.post("/post", async (req, res) => {
     return
   }
 
-  const postId = `${req.body.postId || ""}`
-  const appId = `${req.body.appId || uuidv4()}`
+  const appId = req.params.appId
+
+  if (!uuidValidate(appId)) {
+    console.error("invalid appId")
+    res.status(400)
+    res.write(JSON.stringify({ error: `invalid appId` }))
+    res.end()
+    return
+  }
+
+  const postId = `${req.body.postId || uuidv4()}`
   const prompt = `${req.body.prompt || ""}`
   const assetUrl = `${req.body.assetUrl || ""}`
   const previewUrl = `${req.body.previewUrl || assetUrl}`
@@ -49,15 +58,7 @@ app.post("/post", async (req, res) => {
     res.end()
     return
   }
-
-  if (!uuidValidate(appId)) {
-    console.error(`invalid appId ${appId}`)
-    res.status(400)
-    res.write(JSON.stringify({ error: `invalid appId ${appId}` }))
-    res.end()
-    return
-  }
-
+  
   if (!prompt.length) {
     console.error(`invalid prompt length: cannot be zero`)
     res.status(400)
