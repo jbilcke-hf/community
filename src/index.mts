@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid"
 import { hasValidAuthorization } from "./utils/hasValidAuthorization.mts"
 import { initFolders } from "./initFolders.mts"
 import { getValidNumber } from "./utils/getValidNumber.mts"
-import { CreatePostResponse, GetAppPostsResponse, Post } from "./types.mts"
+import { CreatePostResponse, GetAppPostsResponse, Post, PostVisibility } from "./types.mts"
 import { savePost } from "./core/savePost.mts"
 import { getAppPosts } from "./core/getAppPosts.mts"
 import { deletePost } from "./core/deletePost.mts"
@@ -38,6 +38,7 @@ app.post("/post", async (req, res) => {
   const assetUrl = `${req.body.assetUrl || ""}`
   const previewUrl = `${req.body.previewUrl || assetUrl}`
   const createdAt = `${req.body.createdAt || new Date().toISOString()}`
+  const visibility = `${req.body.visibility || "normal"}` as PostVisibility
   const upvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
   const downvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
 
@@ -88,6 +89,7 @@ app.post("/post", async (req, res) => {
     previewUrl,
     assetUrl,
     createdAt,
+    visibility,
     upvotes,
     downvotes,
   }
@@ -108,7 +110,7 @@ app.post("/post", async (req, res) => {
   res.end()
 })
 
-app.get("/posts/:appId", async (req, res) => {
+app.get("/posts/:appId/:visibility", async (req, res) => {
 
   const appId = `${req.params.appId}`
 
@@ -121,7 +123,7 @@ app.get("/posts/:appId", async (req, res) => {
   }
 
   try {
-    const posts = await getAppPosts(appId)
+    const posts = await getAppPosts(appId, visibility)
     res.status(200)
     console.log(`returning ${posts.length} community posts for app ${appId}`)
     res.write(JSON.stringify({ posts } as GetAppPostsResponse))
@@ -137,7 +139,7 @@ app.get("/posts/:appId", async (req, res) => {
   }
 })
 
-// get metadata (json)
+// delete a post
 app.delete("/posts/:appId/:postId", async (req, res) => {
     
   if (!hasValidAuthorization(req.headers)) {
