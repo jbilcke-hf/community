@@ -11,10 +11,14 @@ export type Post = {
   downvotes: number
 }
 
-export type PostAPIResponse = {
+export type CreatePostResponse = {
+  success?: boolean
+  error?: string
+  post: Post
+}
+
+export type GetAppPostsResponse = {
   success?: boolean
   error?: string
   posts: Post[]
 }
-
-export type PostAPIRequest = Partial<Post>

@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid"
 import { hasValidAuthorization } from "./utils/hasValidAuthorization.mts"
 import { initFolders } from "./initFolders.mts"
 import { getValidNumber } from "./utils/getValidNumber.mts"
-import { Post } from "./types.mts"
+import { CreatePostResponse, GetAppPostsResponse, Post } from "./types.mts"
 import { savePost } from "./core/savePost.mts"
 import { getAppPosts } from "./core/getAppPosts.mts"
 import { deletePost } from "./core/deletePost.mts"
@@ -97,13 +97,13 @@ app.post("/post", async (req, res) => {
   } catch (err) {
     console.error(`failed to save the post: ${err}`)
     res.status(400)
-    res.write(JSON.stringify({ error: `failed to save the post: ${err}` }))
+    res.write(JSON.stringify({ error: `failed to save the post: ${err}`, post: undefined } as CreatePostResponse))
     res.end()
     return
   }
 
   res.status(201)
-  res.write(JSON.stringify({ success: true, error: "", post }))
+  res.write(JSON.stringify({ success: true, error: "", post } as CreatePostResponse))
   res.end()
 })
 
@@ -122,14 +122,14 @@ app.get("/posts/:appId", async (req, res) => {
   try {
     const posts = await getAppPosts(appId)
     res.status(200)
-    res.write(JSON.stringify({ posts }))
+    res.write(JSON.stringify({ posts } as GetAppPostsResponse))
     res.end()
     return
   } catch (err) {
     const error = `failed to load the posts: ${err}`
     console.error(error)
     res.status(500)
-    res.write(JSON.stringify({ posts: [], error }))
+    res.write(JSON.stringify({ posts: [], error } as GetAppPostsResponse))
     res.end()
     return
   }
