@@ -14,7 +14,7 @@ export type Post = {
 export type PostAPIResponse = {
   success?: boolean
   error?: string
-  post: Post
+  posts: Post[]
 }
 
 export type PostAPIRequest = Partial<Post>
