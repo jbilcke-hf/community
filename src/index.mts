@@ -94,6 +94,7 @@ app.post("/post", async (req, res) => {
   
   try {
     await savePost(post)
+    console.log(`saved post:`, post)
   } catch (err) {
     console.error(`failed to save the post: ${err}`)
     res.status(400)
@@ -122,6 +123,7 @@ app.get("/posts/:appId", async (req, res) => {
   try {
     const posts = await getAppPosts(appId)
     res.status(200)
+    console.log(`returning ${posts.length} community posts for app ${appId}`)
     res.write(JSON.stringify({ posts } as GetAppPostsResponse))
     res.end()
     return
