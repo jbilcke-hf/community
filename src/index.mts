@@ -122,15 +122,20 @@ app.get("/posts/:appId/:visibility", async (req, res) => {
     return
   }
 
+  const visibility = `${req.params.visibility}`
+
   try {
-    const posts = await getAppPosts(appId, visibility)
+    const posts = await getAppPosts(
+      appId,
+      visibility === "all" ? undefined : visibility as PostVisibility
+    )
     res.status(200)
-    console.log(`returning ${posts.length} community posts for app ${appId}`)
+    console.log(`returning ${posts.length} community posts for app ${appId} (visibility: ${visibility})`)
     res.write(JSON.stringify({ posts } as GetAppPostsResponse))
     res.end()
     return
   } catch (err) {
-    const error = `failed to load the posts: ${err}`
+    const error = `failed to load the posts for app ${appId} and visibility ${visibility}: ${err}`
     console.error(error)
     res.status(500)
     res.write(JSON.stringify({ posts: [], error } as GetAppPostsResponse))
