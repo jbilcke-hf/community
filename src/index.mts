@@ -1,5 +1,6 @@
 import { validate as uuidValidate } from "uuid"
 import express from "express"
+import { v4 as uuidv4 } from "uuid"
 
 import { hasValidAuthorization } from "./utils/hasValidAuthorization.mts"
 import { initFolders } from "./initFolders.mts"
@@ -32,10 +33,10 @@ app.post("/post", async (req, res) => {
   }
 
   const postId = `${req.body.postId || ""}`
-  const appId = `${req.body.appId || ""}`
+  const appId = `${req.body.appId || uuidv4()}`
   const prompt = `${req.body.prompt || ""}`
-  const previewUrl = `${req.body.previewUrl || ""}`
   const assetUrl = `${req.body.assetUrl || ""}`
+  const previewUrl = `${req.body.previewUrl || assetUrl}`
   const createdAt = `${req.body.createdAt || ""}`
   const upvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
   const downvotes = getValidNumber(req.body.upvotes, 0, 1e15, 0)
@@ -101,10 +102,8 @@ app.post("/post", async (req, res) => {
     return
   }
 
-  const cachedJson = JSON.stringify(post)
-  // console.log(`request ${request} is in cache!`)
-  res.status(200)
-  res.write(cachedJson)
+  res.status(201)
+  res.write(JSON.stringify({ success: true, error: "", post }))
   res.end()
 })
 
