@@ -177,9 +177,9 @@ app.delete("/posts/:appId/:postId", async (req, res) => {
   }
 
   try {
-    const post = await deletePost(appId, postId)
+    await deletePost(appId, postId)
     res.status(200)
-    res.write(JSON.stringify(post))
+    res.write(JSON.stringify({ success: true }))
     res.end()
   } catch (err) {
     console.error(err)
