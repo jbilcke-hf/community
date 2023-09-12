@@ -5,10 +5,11 @@ import { v4 as uuidv4 } from "uuid"
 import { hasValidAuthorization } from "./utils/hasValidAuthorization.mts"
 import { initFolders } from "./initFolders.mts"
 import { getValidNumber } from "./utils/getValidNumber.mts"
-import { CreatePostResponse, GetAppPostsResponse, Post, PostVisibility } from "./types.mts"
+import { CreatePostResponse, GetAppPostResponse, GetAppPostsResponse, Post, PostVisibility } from "./types.mts"
 import { savePost } from "./core/savePost.mts"
 import { getAppPosts } from "./core/getAppPosts.mts"
 import { deletePost } from "./core/deletePost.mts"
+import { getPost } from "./core/getPost.mts"
 
 initFolders()
 
@@ -111,7 +112,7 @@ app.post("/posts/:appId", async (req, res) => {
   res.end()
 })
 
-app.get("/posts/:appId/:visibility", async (req, res) => {
+app.get("/posts/:appId/:param", async (req, res) => {
 
   const appId = `${req.params.appId}`
 
@@ -123,25 +124,47 @@ app.get("/posts/:appId/:visibility", async (req, res) => {
     return
   }
 
-  const visibility = `${req.params.visibility}`
+  const param = `${req.params.param}`
+  const isVisibility = !uuidValidate(param)
 
-  try {
-    const posts = await getAppPosts(
-      appId,
-      visibility === "all" ? undefined : visibility as PostVisibility
-    )
-    res.status(200)
-    console.log(`returning ${posts.length} community posts for app ${appId} (visibility: ${visibility})`)
-    res.write(JSON.stringify({ posts } as GetAppPostsResponse))
-    res.end()
-    return
-  } catch (err) {
-    const error = `failed to load the posts for app ${appId} and visibility ${visibility}: ${err}`
-    console.error(error)
-    res.status(500)
-    res.write(JSON.stringify({ posts: [], error } as GetAppPostsResponse))
-    res.end()
-    return
+  if (isVisibility) {
+    const visibility = param
+    try {
+      const posts = await getAppPosts(
+        appId,
+        visibility === "all" ? undefined : visibility as PostVisibility
+      )
+      res.status(200)
+      console.log(`returning ${posts.length} community posts for app ${appId} (visibility: ${visibility})`)
+      res.write(JSON.stringify({ posts } as GetAppPostsResponse))
+      res.end()
+      return
+      
+    } catch (err) {
+      const error = `failed to load the posts for app ${appId} and visibility ${visibility}: ${err}`
+      console.error(error)
+      res.status(500)
+      res.write(JSON.stringify({ posts: [], error } as GetAppPostsResponse))
+      res.end()
+      return
+    }
+  } else {
+    const postId = param
+    try {
+      const post = await getPost(appId, postId)
+      res.status(200)
+      console.log(`returning post ${postId} for app ${appId}`)
+      res.write(JSON.stringify({ post } as GetAppPostResponse))
+      res.end()
+      return
+    } catch (err) {
+      const error = `failed to load the post for app ${appId} and postId: ${postId}: ${err}`
+      console.error(error)
+      res.status(500)
+      res.write(JSON.stringify({ error } as GetAppPostResponse))
+      res.end()
+      return
+    }
   }
 })
 
