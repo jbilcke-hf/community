@@ -45,6 +45,7 @@ app.post("/posts/:appId", async (req, res) => {
 
   const postId = `${req.body.postId || uuidv4()}`
   const prompt = `${req.body.prompt || ""}`
+  const model = `${req.body.model || ""}`
   const assetUrl = `${req.body.assetUrl || ""}`
   const previewUrl = `${req.body.previewUrl || assetUrl}`
   const createdAt = `${req.body.createdAt || new Date().toISOString()}`
@@ -88,6 +89,7 @@ app.post("/posts/:appId", async (req, res) => {
     postId,
     appId,
     prompt,
+    model,
     previewUrl,
     assetUrl,
     createdAt,
@@ -102,7 +104,12 @@ app.post("/posts/:appId", async (req, res) => {
   } catch (err) {
     console.error(`failed to save the post: ${err}`)
     res.status(400)
-    res.write(JSON.stringify({ error: `failed to save the post: ${err}`, post: undefined } as CreatePostResponse))
+    res.write(JSON.stringify({
+      success: false,
+      error: `failed to save the post: ${err}`,
+      post: undefined
+    } as unknown as CreatePostResponse
+    ))
     res.end()
     return
   }
