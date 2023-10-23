@@ -10,8 +10,8 @@ export const readPostFiles = async (postDirFilePath: string, appId?: string, lim
 
   const now = Date.now()
   
-  if (cache[postDirFilePath] && (now - cache[postDirFilePath].timestamp) < (5 * 60 * 1000)) { 
-    // return cached data if it's less than 5 minutes old
+  if (cache[postDirFilePath] && (now - cache[postDirFilePath].timestamp) < (10 * 60 * 1000)) { 
+    // return cached data if it's less than 10 minutes old
     return cache[postDirFilePath].files
   }
 
