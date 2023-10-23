@@ -10,6 +10,7 @@ import { savePost } from "./core/savePost.mts"
 import { getAppPosts } from "./core/getAppPosts.mts"
 import { deletePost } from "./core/deletePost.mts"
 import { getPost } from "./core/getPost.mts"
+import { getValidBoolean } from "./utils/getValidBoolean.mts"
 
 initFolders()
 
@@ -119,7 +120,7 @@ app.post("/posts/:appId", async (req, res) => {
   res.end()
 })
 
-app.get("/posts/:appId/:param", async (req, res) => {
+app.get("/posts/:appId/firehose/:visibility/:maxNbItems/:shuffle", async (req, res) => {
 
   const appId = `${req.params.appId}`
 
@@ -131,16 +132,19 @@ app.get("/posts/:appId/:param", async (req, res) => {
     return
   }
 
-  const param = `${req.params.param}`
-  const isVisibility = !uuidValidate(param)
+  const visibility = `${req.params.visibility}`
 
-  if (isVisibility) {
-    const visibility = param
+  const shuffle = getValidBoolean(`${req.params.shuffle}`, false)
+
+  const limit = getValidNumber(`${req.params.maxNbItems}`, 1, 80, 20)
+
     try {
-      const posts = await getAppPosts(
+      const posts = await getAppPosts({
         appId,
-        visibility === "all" ? undefined : visibility as PostVisibility
-      )
+        visibility: visibility === "all" ? undefined : visibility as PostVisibility,
+        shuffle,
+        limit
+      })
       res.status(200)
       console.log(`returning ${posts.length} community posts for app ${appId} (visibility: ${visibility})`)
       res.write(JSON.stringify({ posts } as GetAppPostsResponse))
@@ -155,8 +159,31 @@ app.get("/posts/:appId/:param", async (req, res) => {
       res.end()
       return
     }
-  } else {
-    const postId = param
+})
+
+
+app.get("/posts/:appId/:postId", async (req, res) => {
+
+  const appId = `${req.params.appId}`
+
+  if (!uuidValidate(appId)) {
+    console.error("invalid appId")
+    res.status(400)
+    res.write(JSON.stringify({ error: `invalid appId` }))
+    res.end()
+    return
+  }
+
+  const postId = `${req.params.postId}`
+
+  if (!uuidValidate(postId)) {
+    console.error("invalid postId")
+    res.status(400)
+    res.write(JSON.stringify({ error: `invalid postId` }))
+    res.end()
+    return
+  }
+
     try {
       const post = await getPost(appId, postId)
       res.status(200)
@@ -172,7 +199,6 @@ app.get("/posts/:appId/:param", async (req, res) => {
       res.end()
       return
     }
-  }
 })
 
 // delete a post

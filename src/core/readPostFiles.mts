@@ -6,7 +6,7 @@ import { readPostFile } from "./readPostFile.mts"
 
 const cache = {} as { [directory: string]: { timestamp: number, files: Post[] } };
 
-export const readPostFiles = async (postDirFilePath: string, appId?: string): Promise<Post[]> => {
+export const readPostFiles = async (postDirFilePath: string, appId?: string, limit?: number): Promise<Post[]> => {
 
   const now = Date.now()
   
@@ -29,8 +29,15 @@ export const readPostFiles = async (postDirFilePath: string, appId?: string): Pr
   }
 
   const posts: Post[] = []
+  
+  // TODO implement filtering at this level, using the date
 
-  for (const  postFileName of postFiles) {
+  // until then let's implement a hard limit
+  const postFilesToRead = postFiles.slice(0, 300)
+
+
+  for (const postFileName of postFilesToRead) {
+
     // console.log("postFileName:", postFileName)
     const postFilePath = path.join(postDirFilePath, postFileName)
     try {
@@ -49,6 +56,6 @@ export const readPostFiles = async (postDirFilePath: string, appId?: string): Pr
 
   // store results in cache with current timestamp
   cache[postDirFilePath] = { timestamp: now, files: posts }
-  
+
   return posts
 }
