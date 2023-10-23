@@ -4,7 +4,16 @@ import { promises as fs } from "node:fs"
 import { Post } from "../types.mts"
 import { readPostFile } from "./readPostFile.mts"
 
+const cache = {} as { [directory: string]: { timestamp: number, files: Post[] } };
+
 export const readPostFiles = async (postDirFilePath: string, appId?: string): Promise<Post[]> => {
+
+  const now = Date.now()
+  
+  if (cache[postDirFilePath] && (now - cache[postDirFilePath].timestamp) < (5 * 60 * 1000)) { 
+    // return cached data if it's less than 5 minutes old
+    return cache[postDirFilePath].files
+  }
 
   let postFiles: string[] = []
   try {
@@ -38,5 +47,8 @@ export const readPostFiles = async (postDirFilePath: string, appId?: string): Pr
     }
   }
 
+  // store results in cache with current timestamp
+  cache[postDirFilePath] = { timestamp: now, files: posts }
+  
   return posts
 }
